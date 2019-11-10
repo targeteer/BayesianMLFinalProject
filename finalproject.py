@@ -46,7 +46,7 @@ ax = sns.heatmap(data_pivoted)
 # (2) Describe the behavior of the function. Does it appear stationary? (That is, does the behavior
 # of the function appear to be relatively constant throughout the domain?)
 # DK : check https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.adfuller.html?highlight=adf#statsmodels.tsa.stattools.adfuller
-# DK : don't run this if your computer memory is filled up. y has 1,000,000(1000*1000) points and it freezes up your computer!
+# DK : don't run this if your computer memory is filled up. y has 1,000,000(1000*1000) points and it freezes up your computer!...PS I could never run this on my computer btw..
 # stat_check = statsmodels.tsa.stattools.adfuller(df.y)
 # print(stat_check[0])
 
