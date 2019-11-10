@@ -5,7 +5,9 @@ import pandas as pd
 import csv
 import sklearn
 from scipy import stats
-from mpl_toolkits.mplot3d import Axes3D
+import statsmodels
+from statsmodels.tsa.stattools import adfuller
+
 
 
 
@@ -33,15 +35,20 @@ x2 = np.tile(x2, reps = 1000)
 xx = [x1, x2]
 y = branin(xx)
 
-# h = sns.heatmap(x1,x2,y)
+# (1) Make a heatmap of the value of the Branin function over the domain X = [−5, 10] × [0, 15]
+# using a dense grid of values, with 1000 values per dimension, forming a 1000 × 1000 image.
 df = pd.DataFrame.from_dict(np.array([x1,x2,y]).T)
 df.columns = ['x1', 'x2', 'y']
-
 data_pivoted = df.pivot("x1", "x2", "y")
 ax = sns.heatmap(data_pivoted)
-plt.show()
+# plt.show()
 
-# ## behavior of the function is not stationary
+# (2) Describe the behavior of the function. Does it appear stationary? (That is, does the behavior
+# of the function appear to be relatively constant throughout the domain?)
+# DK : check https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.adfuller.html?highlight=adf#statsmodels.tsa.stattools.adfuller
+# DK : don't run this if your computer memory is filled up. y has 1,000,000(1000*1000) points and it freezes up your computer!
+# stat_check = statsmodels.tsa.stattools.adfuller(df.y)
+# print(stat_check[0])
 
 # kernel density estimate of LDA
 lda = pd.read_csv("lda.csv")
@@ -49,7 +56,7 @@ dy = lda.iloc[:,3]
 y = list(range(len(dy)))
 y = pd.Series(y)
 
-ax = y.plot.kde()
+# ax = y.plot.kde()
 # plt.show()
 
 # kernel density estimate of SVM
@@ -58,8 +65,8 @@ dy = svm.iloc[:,3]
 y = list(range(len(dy)))
 y = pd.Series(y)
 
-ax = y.plot.kde()
-plt.show()
+# ax = y.plot.kde()
+# plt.show()
 
 
 # ###################
@@ -104,14 +111,14 @@ se_kernel = GPy.kern.RBF(input_dim = 2, variance = 1, lengthscale = 1.)
 m = GPy.models.GPRegression(xx, y, kernel = se_kernel)
 
 m.plot()
-plt.show()
-print(m)
+# plt.show()
+# print(m)
 
 #optimize
 m.optimize()
 m.plot()
-plt.show()
-print(m)
+# plt.show()
+# print(m)
 
 
 
