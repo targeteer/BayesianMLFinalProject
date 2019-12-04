@@ -7,7 +7,10 @@ import sklearn
 from scipy import stats
 import statsmodels
 from statsmodels.tsa.stattools import adfuller
-
+import numpy as np
+import GPy
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import *
 
 
 
@@ -40,8 +43,8 @@ y = branin(xx)
 df = pd.DataFrame.from_dict(np.array([x1,x2,y]).T)
 df.columns = ['x1', 'x2', 'y']
 data_pivoted = df.pivot("x1", "x2", "y")
-# ax = sns.heatmap(data_pivoted)
-# plt.show()
+ax = sns.heatmap(data_pivoted)
+plt.show()
 
 # (2) Describe the behavior of the function. Does it appear stationary? (That is, does the behavior
 # of the function appear to be relatively constant throughout the domain?)
@@ -56,35 +59,35 @@ data_pivoted = df.pivot("x1", "x2", "y")
 
 
 
-# (4) Make a kernel density estimate of the distribution of the values for the lda and svm benchmarks.
-# kernel density estimate of LDA
-lda = pd.read_csv("lda.csv")
-dy = lda.iloc[:,3]
-# y = list(range(len(dy)))
-# y = pd.Series(y)
+# # (4) Make a kernel density estimate of the distribution of the values for the lda and svm benchmarks.
+# # kernel density estimate of LDA
+# lda = pd.read_csv("lda.csv")
+# dy = lda.iloc[:,3]
+# # y = list(range(len(dy)))
+# # y = pd.Series(y)
 
-plt.figure(1)
-plt.title('Kernel Density Estimate of LDA')
-plt.xlabel('y')
-plt.ylabel('Density')
+# plt.figure(1)
+# plt.title('Kernel Density Estimate of LDA')
+# plt.xlabel('y')
+# plt.ylabel('Density')
 # ax = dy.plot.kde()
 
-plt.figure(2)
-log_dy = np.log(dy)
-plt.title('Kernel Density Estimate of log LDA')
-plt.xlabel('log y')
-plt.ylabel('Density')
+# plt.figure(2)
+# log_dy = np.log(dy)
+# plt.title('Kernel Density Estimate of log LDA')
+# plt.xlabel('log y')
+# plt.ylabel('Density')
 # ax = log_dy.plot.kde()
 # plt.show()
 
-# kernel density estimate of SVM
-svm = pd.read_csv("svm.csv")
-dy = svm.iloc[:,3]
+# # kernel density estimate of SVM
+# svm = pd.read_csv("svm.csv")
+# dy = svm.iloc[:,3]
 
 # ax = dy.plot.kde()
-plt.title('Kernel Density Estimate of SVM')
-plt.xlabel('y')
-plt.ylabel('Density')
+# plt.title('Kernel Density Estimate of SVM')
+# plt.xlabel('y')
+# plt.ylabel('Density')
 # plt.show()
 
 # (5) Again, can you nd a transformation that makes the performance better behaved?
@@ -92,59 +95,83 @@ plt.ylabel('Density')
 
 # ###################
 # ## Model fitting ##
-# ###################
-import sobol_seq
-import GPy
+# # ###################
+# import sobol_seq
+# import GPy
 
-# (1) Select a set of 32 training points for the Branin function in the domain X = [−5, 10] × [0, 15] using a Sobol sequence
-sobel_numbers = sobol_seq.i4_sobol_generate(2, 32)
+# # (1) Select a set of 32 training points for the Branin function in the domain X = [−5, 10] × [0, 15] using a Sobol sequence
+# sobel_numbers = sobol_seq.i4_sobol_generate(2, 32)
 
-xx1 = sobel_numbers[:,0]
-xx2 = sobel_numbers[:,1]
-xx1_domain = xx1 * 15 - 5
-xx2_domain = xx2 * 15
-
-print(xx1)
+# xx1 = sobel_numbers[:,0]
+# xx2 = sobel_numbers[:,1]
+# xx1_domain = xx1 * 15 - 5
+# xx2_domain = xx2 * 15
 
 
-# xx: 2-dimensional input, y : 1-d output
-xx = np.column_stack((xx1,xx2))
-input = [xx1,xx2]
-y = branin(input)
+# xx = list(zip(xx1_domain, xx2_domain))
+# y = branin(xx)
+
+# print(y)
 
 
-# (2) Fit a Gaussian process model to the data using a constant mean and a squared exponential covariance
+# # xx: 2-dimensional input, y : 1-d output
+# # xx = np.column_stack((xx1_domain,xx2_domain))
+# # input = [xx1_domain,xx2_domain]
 
-# add noise to y
-noise = np.random.normal(0,0.001,len(y))
-y = y + noise
-y = y.reshape(-1, 1) # or  y = pd.DataFrame(y)
-## use reshape(-1, 1) if it is a single feature
-xx1 = xx1.reshape(-1, 1)
 
-# squared exponential covariance
-# d = 2
-# var = 0.2 # variance
-# theta = np.asarray([0.2, 0.5, 1., 2., 4.])
-# for t in theta:
-#     se_kernel['.*lengthscale'] = t
-#     se_kernel.plot()
-#     plt.show()
-## Larger the theta(lengthscale) is, bigger the kernel region is.
-## Change in variance does not change the region of the kernel
 
-se_kernel = GPy.kern.RBF(input_dim = 2, variance = 1, lengthscale = 1.)
-m = GPy.models.GPRegression(xx, y, kernel = se_kernel)
 
-m.plot()
-plt.show()
-# print(m)
+# # (2) Fit a Gaussian process model to the data using a constant mean and a squared exponential covariance
 
-#optimize
-m.optimize()
-m.plot()
+# # add noise to y
+# noise = np.random.normal(0,0.001,len(y))
+# y = y + noise
+# y = y.reshape(-1, 1) 
+# # or  y = pd.DataFrame(y)
+# ## use reshape(-1, 1) if it is a single feature
+# # xx1 = xx1.reshape(-1, 1)
+
+# # squared exponential covariance
+# # d = 2
+# # var = 0.2 # variance
+# # theta = np.asarray([0.2, 0.5, 1., 2., 4.])
+# # for t in theta:
+# #     se_kernel['.*lengthscale'] = t
+# #     se_kernel.plot()
+# #     plt.show()
+# ## Larger the theta(lengthscale) is, bigger the kernel region is.
+# ## Change in variance does not change the region of the kernel
+
+# kernel = RBF(1,1)
+# gpr = GaussianProcessRegressor(kernel = kernel)
+# # xx = (np.array([xx1_domain, xx2_domain])).T
+# gpr.fit(input,y)
+
+
+
+# df = pd.DataFrame.from_dict(np.array([xx1_domain,xx2_domain,y]).T)
+# df.columns = ['x1', 'x2', 'y']
+# data_pivoted = df.pivot("x1", "x2", "y")
+# ax = sns.heatmap(data_pivoted)
 # plt.show()
-# print(m)
+
+
+
+
+# # plt.figure(1)
+# # plt.plot(xx1_domain, y,'o', ms=5, label = "observations")
+# # y_gpr, y_std = gpr.predict(xx1_domain, return_std=True)
+# # plt.plot(xx1_domain, y_gpr, color='black', lw=0.2, label='predictions')
+# # plt.fill_between(xx1_domain, y_gpr - 1.96*y_std, y_gpr + 1.96*y_std, color='darkorange')
+# # plt.title('Guassian process using constant mean and rbf kernel')
+# # plt.show()
+# # print(m)
+
+# #optimize
+# # m.optimize()
+# # m.plot()
+# # plt.show()
+# # print(m)
 
 
 
